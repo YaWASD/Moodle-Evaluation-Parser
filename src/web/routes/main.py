@@ -929,7 +929,12 @@ def export():
                 format_choice = form.format.data
                 output_folder = Path(current_app.config["OUTPUT_FOLDER"])
                 output_folder.mkdir(parents=True, exist_ok=True)
-                output_path = output_folder / f"{sanitized_name}.{format_choice}"
+                # Расширения файлов для выгрузки (не всегда совпадает с ключом формата в UI).
+                # Например: формат "excel" экспортируется как .xlsx.
+                format_ext = {
+                    "excel": "xlsx",
+                }.get(format_choice, format_choice)
+                output_path = output_folder / f"{sanitized_name}.{format_ext}"
 
                 generated_successfully = False
 
@@ -1082,7 +1087,13 @@ def export_download(export_id: str):
         flash("Файл экспорта не найден на сервере.", "error")
         return redirect(url_for("main.export"))
 
-    return send_file(candidate, as_attachment=True, download_name=candidate.name)
+    download_name = candidate.name
+    # Backward compatibility: previously Excel exports could be saved as "*.excel"
+    # while containing a valid .xlsx workbook (openpyxl). Serve correct extension to the user.
+    if candidate.suffix.lower() == ".excel":
+        download_name = candidate.with_suffix(".xlsx").name
+
+    return send_file(candidate, as_attachment=True, download_name=download_name)
 
 
 @main_bp.get("/activity")
