@@ -7,8 +7,8 @@
 1) Клонирование репозитория:
 
 ```bash
-git clone <ССЫЛКА_НА_РЕПОЗИТОРИЙ>
-cd <ПАПКА_ПРОЕКТА>
+git clone https://github.com/YaWASD/Moodle-Evaluation-Parser.git
+cd Moodle-Evaluation-Parser
 ```
 
 2) Установка зависимостей:
