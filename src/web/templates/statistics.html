@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="dashboard">
+        <div class="stats-grid">
+            <article class="stat-card">
+                <h2>Курсы</h2>
+                <p class="stat-value">{{ stats.total_courses }}</p>
+            </article>
+            <article class="stat-card">
+                <h2>Вопросы</h2>
+                <p class="stat-value">{{ stats.total_questions }}</p>
+            </article>
+            <article class="stat-card">
+                <h2>Загрузок</h2>
+                <p class="stat-value">{{ uploads|length }}</p>
+            </article>
+        </div>
+    </div>
+
+    <div class="upload-card">
+        <h2>Распределение по типам вопроса</h2>
+        {% if stats.type_distribution %}
+            <div class="badge-list">
+                {% for type, count in stats.type_distribution.items() %}
+                    <span class="badge">{{ question_types.get(type, type) }} — {{ count }}</span>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Данные отсутствуют.</p>
+        {% endif %}
+    </div>
+
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <h2>Курсы</h2>
+            <a class="link" href="{{ url_for('main.statistics_report') }}">Скачать отчет (CSV)</a>
+        </div>
+        {% if stats.course_distribution %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Вопросов</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in stats.course_distribution %}
+                            <tr>
+                                <td>{{ course.name }}</td>
+                                <td>{{ course.question_count }}</td>
+                                <td><a href="{{ url_for('main.statistics_course', course_id=course.id) }}">Подробнее</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Нет данных по курсам.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

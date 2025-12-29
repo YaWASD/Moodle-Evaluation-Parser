@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Вопросы | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <h1>Вопросы</h1>
+            <div class="actions-grid">
+                <a class="action-card" href="{{ url_for('main.question_create') }}">Новый вопрос</a>
+                <a class="action-card" href="{{ url_for('main.questions_bulk_edit') }}">Массовое редактирование</a>
+            </div>
+        </div>
+
+        <form method="get" class="filters">
+            <input type="text" name="search" placeholder="Поиск..." value="{{ filters.search }}" />
+            <select name="type">
+                <option value="">Все типы</option>
+                {% for key, label in question_types.items() %}
+                    <option value="{{ key }}" {% if filters.type == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="course">
+                <option value="">Все курсы</option>
+                {% for course in courses %}
+                    <option value="{{ course.id }}" {% if filters.course == course.id %}selected{% endif %}>{{ course.name }}</option>
+                {% endfor %}
+            </select>
+            <label class="checkbox-inline">
+                <input type="checkbox" name="regex" value="1" {% if filters.regex == "1" %}checked{% endif %}/> Регулярное выражение
+            </label>
+            <label class="checkbox-inline">
+                <input type="checkbox" name="has_answers" value="1" {% if filters.has_answers == "1" %}checked{% endif %}/> Только с вариантами
+            </label>
+            <button class="primary-btn" type="submit">Применить</button>
+        </form>
+
+        {% if questions %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Файл</th>
+                            <th>Курс</th>
+                            <th>Тип</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question in questions %}
+                            <tr>
+                                <td>{{ question.name }}</td>
+                                <td>{{ question.file_name or "—" }}</td>
+                                <td>{{ question.course_name }}</td>
+                                <td>{{ question_types.get(question.type, question.type) }}</td>
+                                <td class="row-actions">
+                                    <a href="{{ url_for('main.question_detail', question_id=question.id) }}">Подробнее</a> ·
+                                    <a href="{{ url_for('main.question_edit', question_id=question.id) }}">Редактировать</a> ·
+                                    <a href="{{ url_for('main.question_preview', question_id=question.id) }}">Превью</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Вопросы не найдены.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+

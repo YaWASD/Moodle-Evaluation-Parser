@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Курсы | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>Курсы</h1>
+        <p>Всего курсов: {{ courses|length or 0 }} · Вопросов: {{ total_questions }}</p>
+        {% if courses %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Вопросов</th>
+                            <th>Распределение типов</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in courses %}
+                            <tr>
+                                <td>{{ course.name }}</td>
+                                <td>{{ course.question_count }}</td>
+                                <td>
+                                    {% for type, count in course.type_stats.items() %}
+                                        <span class="badge">{{ type_labels.get(type, type) }} — {{ count }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td><a href="{{ url_for('main.course_detail', course_id=course.id) }}">Подробнее</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Курсы не найдены. Загрузите файл с вопросами.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Шаблоны оформления | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <div>
+                <h1>Шаблоны оформления</h1>
+                <p>Управляйте пользовательскими шаблонами для разных типов вопросов.</p>
+            </div>
+            <a class="link" href="{{ url_for('main.template_create') }}">Создать шаблон</a>
+        </div>
+
+        <div class="notice notice-warning">
+            <strong>Черновик:</strong> раздел «Шаблоны оформления» находится в разработке. Возможны ошибки в работе редактора и предпросмотра.
+        </div>
+
+        {% if template_sets %}
+            {% for s in template_sets %}
+                <details class="template-set" {% if loop.first %}open{% endif %}>
+                    <summary>
+                        <strong>{{ s.name }}</strong>
+                        <span class="muted">({{ s.templates|length }} шт.)</span>
+                    </summary>
+                    <div class="table-wrapper" style="margin-top: 10px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Тип</th>
+                                    <th>Описание</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for template in s.templates %}
+                                    <tr>
+                                        <td>{{ question_types.get(template.type, template.type) }}</td>
+                                        <td>{{ template.description or "—" }}</td>
+                                        <td class="row-actions">
+                                            <a href="{{ url_for('main.template_edit', template_id=template.id) }}">Редактировать</a> ·
+                                            <a href="{{ url_for('main.template_export', template_id=template.id) }}">Экспорт</a>
+                                            <form method="post" action="{{ url_for('main.template_delete', template_id=template.id) }}" style="display:inline">
+                                                {{ delete_form.hidden_tag() }}
+                                                <button type="submit" class="link danger-link">Удалить</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            {% endfor %}
+        {% else %}
+            <p>Шаблонов пока нет.</p>
+        {% endif %}
+    </div>
+
+    <div class="upload-card">
+        <h2>Импорт шаблона</h2>
+        <form method="post">
+            {{ import_form.hidden_tag() }}
+            {{ import_form.payload(class="text-area") }}
+            {{ import_form.submit(class="primary-btn") }}
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+
+

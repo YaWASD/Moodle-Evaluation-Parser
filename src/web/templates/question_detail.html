@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ question.name }} | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <h1>{{ question.name }}</h1>
+            <a class="link" href="{{ url_for('main.question_edit', question_id=question.id) }}">Редактировать</a>
+        </div>
+        <p><strong>Курс:</strong> {{ question.course_name }}</p>
+        <p><strong>Тип:</strong> {{ type_label }}</p>
+        <p><strong>Текст вопроса:</strong></p>
+        <p>{{ question.question_text or "—" }}</p>
+
+        {% if question.reference_answer %}
+            <p><strong>Эталонный ответ:</strong></p>
+            <p>{{ question.reference_answer }}</p>
+        {% endif %}
+
+        {% if question.answers %}
+            <p><strong>Варианты:</strong></p>
+            <ul>
+                {% for answer in question.answers %}
+                    <li>{{ answer }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if question.correct_answers %}
+            <p><strong>Правильные ответы:</strong></p>
+            <ul>
+                {% for answer in question.correct_answers %}
+                    <li>{{ answer }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <a class="link" href="{{ url_for('main.question_preview', question_id=question.id) }}">Предпросмотр</a>
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+

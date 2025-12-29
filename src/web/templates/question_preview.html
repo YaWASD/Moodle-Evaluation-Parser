@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Предпросмотр | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>Предпросмотр вопроса</h1>
+        <p><strong>Курс:</strong> {{ question.course_name }}</p>
+        <p><strong>Тип:</strong> {{ type_label }}</p>
+        <div class="preview-block">
+            <p>{{ question.question_text }}</p>
+            {% if question.answers %}
+                <ul>
+                    {% for answer in question.answers %}
+                        <li>{{ answer }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+
+
+

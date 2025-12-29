@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Главная | Парсер{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+    <div class="stats-grid">
+        <article class="stat-card">
+            <h2>Файлы</h2>
+            <p class="stat-value">{{ stats.total_uploads if stats else 0 }}</p>
+            <small>загружено</small>
+        </article>
+        <article class="stat-card">
+            <h2>Курсы</h2>
+            <p class="stat-value">{{ stats.total_courses if stats else 0 }}</p>
+            <small>обнаружено</small>
+        </article>
+        <article class="stat-card">
+            <h2>Вопросы</h2>
+            <p class="stat-value">{{ stats.total_questions if stats else 0 }}</p>
+            <small>в обработке</small>
+        </article>
+        <article class="stat-card">
+            <h2>Экспорты</h2>
+            <p class="stat-value">{{ stats.generated_reports if stats else 0 }}</p>
+            <small>создано</small>
+        </article>
+    </div>
+
+    <div class="actions-grid">
+        <a class="action-card" href="{{ url_for('main.upload') }}">
+            <h3>Загрузить XML</h3>
+            <p>Начните с импорта файла в формате Moodle.</p>
+        </a>
+        <a class="action-card" href="{{ url_for('main.questions') }}">
+            <h3>Перейти к вопросам</h3>
+            <p>Просмотр, фильтрация и редактирование вопросов.</p>
+        </a>
+        <a class="action-card" href="{{ url_for('main.export') }}">
+            <h3>Экспортировать</h3>
+            <p>Соберите документ в нужном формате.</p>
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+
+
+

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Загрузка файлов | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>Загрузка XML файла</h1>
+        <p>Используйте файл экспорта вопросов из Moodle (формат XML).</p>
+        <form method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <label class="dropzone">
+                <span id="dropzone-hint">Перетащите файл сюда или нажмите для выбора</span>
+                {{ form.xml_file(class="file-input", id="xml-file-input", multiple=True) }}
+            </label>
+            <div class="muted" id="selected-file-name">Файл не выбран</div>
+            {% if form.xml_file.errors %}
+                <div class="form-error">
+                    {{ form.xml_file.errors[0] }}
+                </div>
+            {% endif %}
+            {{ form.submit(class="primary-btn") }}
+        </form>
+    </div>
+
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <h2>Последние загрузки</h2>
+            <a class="link" href="{{ url_for('main.files_history') }}">История</a>
+        </div>
+        {% if uploads %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Файл</th>
+                            <th>Курсов</th>
+                            <th>Вопросов</th>
+                            <th>Дата</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in uploads|reverse %}
+                        <tr>
+                            <td>{{ item.original_name }}</td>
+                            <td>{{ item.course_count }}</td>
+                            <td>{{ item.question_count }}</td>
+                            <td>{{ item.uploaded_at[:19].replace('T', ' ') }}</td>
+                            <td><a href="{{ url_for('main.parse_results', file_id=item.id) }}">Просмотр</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Пока нет загруженных файлов.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+

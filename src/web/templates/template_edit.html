@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card" style="display:grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items:start;">
+        <div>
+            <h1>{{ title }}</h1>
+            <div class="notice notice-warning" style="margin-bottom: 12px;">
+                <strong>В разработке:</strong> редактор шаблонов является черновиком. Часть функций может работать нестабильно или измениться в следующих версиях.
+            </div>
+            <form method="post" id="template-form">
+                {{ form.hidden_tag() }}
+                <label>Название</label>
+                {{ form.name(class="text-input") }}
+                <label>Тип вопроса</label>
+                {{ form.type(class="text-input", id="tpl-type") }}
+                <label>Описание</label>
+                {{ form.description(class="text-input") }}
+
+                <h2 style="margin-top:16px;">Пресеты</h2>
+                <div class="form-grid">
+                    <div>
+                        <label>Быстрый пресет</label>
+                        <select class="text-input" id="preset-select">
+                            <option value="">—</option>
+                            {% for p in presets %}
+                                <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:end;">
+                        <button type="button" class="secondary-btn" id="btn-apply-preset">Применить пресет</button>
+                    </div>
+                </div>
+
+                <h2 style="margin-top:16px;">Стили</h2>
+                <div class="form-grid">
+                    <div>
+                        <label>Цвет заголовка задания</label>
+                        <input class="text-input" type="color" id="cfg-header-color" value="#c00000"/>
+                    </div>
+                    <div>
+                        <label>Размер заголовка документа</label>
+                        <input class="text-input" type="number" min="10" max="48" id="cfg-title-size" value="22"/>
+                    </div>
+                    <div>
+                        <label>Размер текста вопроса</label>
+                        <input class="text-input" type="number" min="8" max="28" id="cfg-body-size" value="14"/>
+                    </div>
+                    <div>
+                        <label>Размер заголовка задания</label>
+                        <input class="text-input" type="number" min="8" max="28" id="cfg-task-size" value="16"/>
+                    </div>
+                </div>
+
+                <h2 style="margin-top:16px;">Конструктор блоков</h2>
+                <p class="muted">Соберите вывод как угодно: строка, список, таблица, пробел. Пример: <code>{{"{{question.question_text}} — {{question.reference_answer}}"}}</code></p>
+
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                    <button type="button" class="secondary-btn" id="btn-add-line">+ Строка</button>
+                    <button type="button" class="secondary-btn" id="btn-add-list">+ Список</button>
+                    <button type="button" class="secondary-btn" id="btn-add-table">+ Таблица</button>
+                    <button type="button" class="secondary-btn" id="btn-add-spacer">+ Пробел</button>
+                </div>
+                <div id="blocks-editor"></div>
+
+                <details style="margin-top:14px;">
+                    <summary>Конфигурация (JSON) — advanced</summary>
+                    <div style="margin-top:10px;">
+                        {{ form.config(class="text-area", id="tpl-config") }}
+                    </div>
+                </details>
+
+                <div style="display:flex; gap:10px; margin-top:12px; align-items:center;">
+                    <button type="button" class="secondary-btn" id="btn-preview">Обновить предпросмотр</button>
+                    {{ form.submit(class="primary-btn") }}
+                </div>
+            </form>
+        </div>
+
+        <div>
+            <h2>Предпросмотр</h2>
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+                <label style="margin:0; white-space:nowrap;">Режим</label>
+                <select class="text-input" id="preview-mode" style="flex:1;">
+                    <option value="export_html" selected>Как экспорт HTML (стандартные шаблоны)</option>
+                    <option value="v2">v2 blocks (редактор)</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+                <label style="margin:0; white-space:nowrap;">Вопрос для предпросмотра</label>
+                <select class="text-input" id="preview-question" style="flex:1;">
+                    <option value="">Демо-вопрос</option>
+                    {% for q in questions %}
+                        <option value="{{ q.id }}">{{ q.course_name }} · {{ q.name }} ({{ q.type }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <iframe id="preview-frame" style="width:100%; height: 680px; border:1px solid rgba(0,0,0,0.15); border-radius:10px; background:#fff;"></iframe>
+            <p class="muted" style="margin-top:8px;">Предпросмотр строится по HTML-рендеру и показывает таблицы и стили.</p>
+        </div>
+    </div>
+</section>
+
+<script type="application/json" id="template-editor-data">{{ {"presets": presets, "previewUrl": url_for("main.template_preview") }|tojson }}</script>
+{% raw %}
+<script>
+(() => {
+  try {
+  const dataNode = document.getElementById('template-editor-data');
+  const DATA = dataNode ? JSON.parse(dataNode.textContent || '{}') : {};
+
+  // Template placeholders
+  const PH_TASK_HEADER = "{{task.header}}";
+  const PH_Q_TEXT = "{{question.question_text}}";
+  const PH_Q_REF = "{{question.reference_answer}}";
+  const PH_Q_CORRECT_JOIN = "{{question.correct_join}}";
+  const PH_ITEM = "{{item}}";
+  const PH_ITEM_IS_CORRECT = "{{item|is_correct}}";
+  const PH_ITEM_ITEM = "{{item.item}}";
+  const PH_ITEM_ANSWER = "{{item.answer}}";
+
+  const typeEl = document.getElementById('tpl-type');
+  const cfgEl = document.getElementById('tpl-config');
+  const frame = document.getElementById('preview-frame');
+  const btnPreview = document.getElementById('btn-preview');
+  const questionSel = document.getElementById('preview-question');
+  const previewModeEl = document.getElementById('preview-mode');
+
+  const headerColorEl = document.getElementById('cfg-header-color');
+  const titleSizeEl = document.getElementById('cfg-title-size');
+  const bodySizeEl = document.getElementById('cfg-body-size');
+  const taskSizeEl = document.getElementById('cfg-task-size');
+  const blocksRoot = document.getElementById('blocks-editor');
+
+  const presetSelect = document.getElementById('preset-select');
+  const btnApplyPreset = document.getElementById('btn-apply-preset');
+  const PRESETS = DATA.presets || [];
+
+  const btnAddLine = document.getElementById('btn-add-line');
+  const btnAddList = document.getElementById('btn-add-list');
+  const btnAddTable = document.getElementById('btn-add-table');
+  const btnAddSpacer = document.getElementById('btn-add-spacer');
+
+  function safeJsonParse(text) {
+    try { return JSON.parse(text || '{}'); } catch { return {}; }
+  }
+  function safeJsonStringify(obj) {
+    try { return JSON.stringify(obj, null, 2); } catch { return '{}'; }
+  }
+
+  function ensureConfigBase(cfg) {
+    cfg.version = 2;
+    cfg.styles = cfg.styles || {};
+    cfg.blocks = Array.isArray(cfg.blocks) && cfg.blocks.length ? cfg.blocks : [
+      {kind:'line', pattern: PH_TASK_HEADER},
+      {kind:'line', pattern: PH_Q_TEXT},
+      {kind:'line', pattern: 'Эталон: ' + PH_Q_REF},
+    ];
+    return cfg;
+  }
+
+  function loadUiFromConfig() {
+    const cfg = ensureConfigBase(safeJsonParse(cfgEl.value));
+    const styles = cfg.styles || {};
+
+    if (styles.header_color) headerColorEl.value = styles.header_color;
+    if (styles.title_size) titleSizeEl.value = styles.title_size;
+    if (styles.body_size) bodySizeEl.value = styles.body_size;
+    if (styles.header_size) taskSizeEl.value = styles.header_size;
+    renderBlocksEditor(cfg);
+  }
+
+  function writeStylesToConfig(cfg) {
+    cfg.styles.header_color = headerColorEl.value;
+    cfg.styles.title_size = parseInt(titleSizeEl.value || '22', 10);
+    cfg.styles.body_size = parseInt(bodySizeEl.value || '14', 10);
+    cfg.styles.header_size = parseInt(taskSizeEl.value || '16', 10);
+    return cfg;
+  }
+
+  function blockCardHtml(b, idx) {
+    const kind = b.kind || 'line';
+    const head = `
+      <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <strong>#${idx+1}</strong>
+          <select class="text-input" data-b-idx="${idx}" data-b-field="kind">
+            <option value="line" ${kind==='line'?'selected':''}>Строка</option>
+            <option value="list" ${kind==='list'?'selected':''}>Список</option>
+            <option value="table" ${kind==='table'?'selected':''}>Таблица</option>
+            <option value="spacer" ${kind==='spacer'?'selected':''}>Пробел</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="secondary-btn" data-b-action="up" data-b-idx="${idx}">↑</button>
+          <button type="button" class="secondary-btn" data-b-action="down" data-b-idx="${idx}">↓</button>
+          <button type="button" class="secondary-btn" data-b-action="del" data-b-idx="${idx}">Удалить</button>
+        </div>
+      </div>
+    `;
+
+    const commonHints = `<p class="muted" style="margin:6px 0 0 0;">Доступно: <code>${PH_TASK_HEADER}</code>, <code>${PH_Q_TEXT}</code>, <code>${PH_Q_REF}</code>, <code>${PH_Q_CORRECT_JOIN}</code></p>`;
+
+    if (kind === 'spacer') {
+      return `
+        <div class="upload-card" style="padding:12px;">
+          ${head}
+          <div style="margin-top:10px;">
+            <label>Высота (мм)</label>
+            <input class="text-input" type="number" min="0" max="50" data-b-idx="${idx}" data-b-field="mm" value="${b.mm ?? 4}"/>
+          </div>
+        </div>
+      `;
+    }
+
+    if (kind === 'list') {
+      return `
+        <div class="upload-card" style="padding:12px;">
+          ${head}
+          <div class="form-grid" style="margin-top:10px;">
+            <div>
+              <label>Источник</label>
+              <select class="text-input" data-b-idx="${idx}" data-b-field="source">
+                <option value="answers_all" ${(b.source||'')==='answers_all'?'selected':''}>answers_all</option>
+                <option value="answers_correct" ${(b.source||'')==='answers_correct'?'selected':''}>answers_correct</option>
+                <option value="matching_pairs" ${(b.source||'')==='matching_pairs'?'selected':''}>matching_pairs</option>
+              </select>
+            </div>
+            <div>
+              <label>Маркер</label>
+              <select class="text-input" data-b-idx="${idx}" data-b-field="bullet">
+                <option value="true" ${b.bullet!==false?'selected':''}>• (ul)</option>
+                <option value="false" ${b.bullet===false?'selected':''}>1. (ol)</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label>Шаблон элемента</label>
+            <input class="text-input" data-b-idx="${idx}" data-b-field="pattern" value="${(b.pattern||PH_ITEM).replaceAll('"','&quot;')}"/>
+            <p class="muted" style="margin:6px 0 0 0;">Для list: <code>${PH_ITEM}</code> или для matching: <code>${PH_ITEM_ITEM}</code> / <code>${PH_ITEM_ANSWER}</code></p>
+          </div>
+        </div>
+      `;
+    }
+
+    if (kind === 'table') {
+      return `
+        <div class="upload-card" style="padding:12px;">
+          ${head}
+          <div class="form-grid" style="margin-top:10px;">
+            <div>
+              <label>Источник</label>
+              <select class="text-input" data-b-idx="${idx}" data-b-field="source">
+                <option value="answers_all" ${(b.source||'')==='answers_all'?'selected':''}>answers_all</option>
+                <option value="answers_correct" ${(b.source||'')==='answers_correct'?'selected':''}>answers_correct</option>
+                <option value="matching_pairs" ${(b.source||'')==='matching_pairs'?'selected':''}>matching_pairs</option>
+              </select>
+            </div>
+            <div>
+              <label>Ширины колонок (%)</label>
+              <input class="text-input" data-b-idx="${idx}" data-b-field="col_widths_pct" value="${Array.isArray(b.col_widths_pct)?b.col_widths_pct.join(','):(b.col_widths_pct||'')}"/>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label>Заголовки (через запятую)</label>
+            <input class="text-input" data-b-idx="${idx}" data-b-field="headers" value="${Array.isArray(b.headers)?b.headers.join(', '):(b.headers||'')}"/>
+          </div>
+          <div style="margin-top:10px;">
+            <label>Колонки (выражения через запятую)</label>
+            <input class="text-input" data-b-idx="${idx}" data-b-field="cols" value="${Array.isArray(b.cols)?b.cols.join(', '):(b.cols||PH_ITEM)}"/>
+            <p class="muted" style="margin:6px 0 0 0;">Пример: <code>${PH_ITEM} , ${PH_ITEM_IS_CORRECT}</code> или для matching: <code>${PH_ITEM_ITEM}, ${PH_ITEM_ANSWER}</code></p>
+          </div>
+        </div>
+      `;
+    }
+
+    // line
+    return `
+      <div class="upload-card" style="padding:12px;">
+        ${head}
+        <div style="margin-top:10px;">
+          <label>Шаблон строки</label>
+          <input class="text-input" data-b-idx="${idx}" data-b-field="pattern" value="${(b.pattern||'').replaceAll('"','&quot;')}"/>
+          ${commonHints}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderBlocksEditor(cfg) {
+    const blocks = cfg.blocks || [];
+    blocksRoot.innerHTML = blocks.map((b, idx) => blockCardHtml(b, idx)).join('');
+  }
+
+  function readBlocksFromEditor(cfg) {
+    const blocks = cfg.blocks || [];
+    blocksRoot.querySelectorAll('[data-b-idx]').forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-b-idx'), 10);
+      const field = el.getAttribute('data-b-field');
+      if (!blocks[idx]) return;
+      let v = el.value;
+      if (field === 'mm') v = parseInt(v || '4', 10);
+      if (field === 'bullet') v = (v === 'true');
+      if (field === 'headers') v = v ? v.split(',').map(s => s.trim()).filter(Boolean) : [];
+      if (field === 'cols') v = v ? v.split(',').map(s => s.trim()).filter(Boolean) : [];
+      if (field === 'col_widths_pct') v = v ? v.split(',').map(s => parseInt(s.trim(),10)).filter(n => !Number.isNaN(n)) : [];
+      blocks[idx][field] = v;
+    });
+    cfg.blocks = blocks;
+  }
+
+  async function refreshPreview() {
+    try {
+      const cfg = ensureConfigBase(safeJsonParse(cfgEl.value));
+      readBlocksFromEditor(cfg);
+      writeStylesToConfig(cfg);
+      cfgEl.value = safeJsonStringify(cfg);
+      const resp = await fetch((DATA && DATA.previewUrl) ? DATA.previewUrl : '/templates/preview', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          type: typeEl.value,
+          config: cfgEl.value,
+          question_id: questionSel.value,
+          mode: (previewModeEl && previewModeEl.value) ? previewModeEl.value : 'export_html'
+        })
+      });
+      const text = await resp.text();
+      frame.srcdoc = text || "<div style='padding:12px; font-family: sans-serif;'>Пустой ответ предпросмотра</div>";
+    } catch (e) {
+      console.error("Template preview failed", e);
+      frame.srcdoc = "<div style='padding:12px; font-family: sans-serif; color:#b00020;'>Ошибка предпросмотра: " + String(e) + "</div>";
+    }
+  }
+
+  // Events
+  btnPreview.addEventListener('click', refreshPreview);
+  [headerColorEl, titleSizeEl, bodySizeEl, taskSizeEl, questionSel, previewModeEl].forEach(el => {
+    if (!el) return;
+    el.addEventListener('change', () => refreshPreview());
+  });
+  typeEl.addEventListener('change', () => {
+    loadUiFromConfig();
+    refreshPreview();
+  });
+
+  blocksRoot.addEventListener('input', () => refreshPreview());
+  blocksRoot.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-b-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-b-action');
+    const idx = parseInt(btn.getAttribute('data-b-idx'), 10);
+    const cfg = ensureConfigBase(safeJsonParse(cfgEl.value));
+    readBlocksFromEditor(cfg);
+    if (action === 'del') cfg.blocks.splice(idx, 1);
+    if (action === 'up' && idx > 0) [cfg.blocks[idx-1], cfg.blocks[idx]] = [cfg.blocks[idx], cfg.blocks[idx-1]];
+    if (action === 'down' && idx < cfg.blocks.length-1) [cfg.blocks[idx+1], cfg.blocks[idx]] = [cfg.blocks[idx], cfg.blocks[idx+1]];
+    cfgEl.value = safeJsonStringify(cfg);
+    loadUiFromConfig();
+    refreshPreview();
+  });
+
+  btnAddLine.addEventListener('click', () => {
+    const cfg = ensureConfigBase(safeJsonParse(cfgEl.value));
+    cfg.blocks.push({kind:'line', pattern: PH_Q_TEXT + ' — ' + PH_Q_REF});
+    cfgEl.value = safeJsonStringify(cfg);
+    loadUiFromConfig(); refreshPreview();
+  });
+  btnAddList.addEventListener('click', () => {
+    const cfg = ensureConfigBase(safeJsonParse(cfgEl.value));
+    cfg.blocks.push({kind:'list', source:'answers_correct', pattern: PH_ITEM, bullet:true});
+    cfgEl.value = safeJsonStringify(cfg);
+    loadUiFromConfig(); refreshPreview();
+  });
+  btnAddTable.addEventListener('click', () => {
+    const cfg = ensureConfigBase(safeJsonParse(cfgEl.value));
+    cfg.blocks.push({kind:'table', source:'answers_all', headers:['Вариант','Правильный'], cols:[PH_ITEM, PH_ITEM_IS_CORRECT], col_widths_pct:[70,30]});
+    cfgEl.value = safeJsonStringify(cfg);
+    loadUiFromConfig(); refreshPreview();
+  });
+  btnAddSpacer.addEventListener('click', () => {
+    const cfg = ensureConfigBase(safeJsonParse(cfgEl.value));
+    cfg.blocks.push({kind:'spacer', mm:4});
+    cfgEl.value = safeJsonStringify(cfg);
+    loadUiFromConfig(); refreshPreview();
+  });
+
+  btnApplyPreset.addEventListener('click', () => {
+    const pid = presetSelect.value;
+    const p = (PRESETS || []).find(x => x.id === pid);
+    if (!p) return;
+    cfgEl.value = safeJsonStringify(p.config);
+    loadUiFromConfig();
+    refreshPreview();
+  });
+
+  // initial
+  loadUiFromConfig();
+  refreshPreview();
+  } catch (e) {
+    console.error("Template editor init failed", e);
+    const frame = document.getElementById('preview-frame');
+    if (frame) frame.srcdoc = "<div style='padding:12px; font-family: sans-serif; color:#b00020;'>Ошибка инициализации редактора: " + String(e) + "</div>";
+  }
+})();
+</script>
+{% endraw %}
+{% endblock %}
+
+
+
+
+
+

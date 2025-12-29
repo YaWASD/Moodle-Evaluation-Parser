@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>{{ title }}</h1>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <label>Название шаблона</label>
+            {{ form.name(class="text-input") }}
+            <div class="form-grid">
+                <div>
+                    <label>ПК префикс</label>
+                    {{ form.pk_prefix(class="text-input") }}
+                </div>
+                <div>
+                    <label>ПК ID</label>
+                    {{ form.pk_id(class="text-input") }}
+                </div>
+                <div>
+                    <label>ИПК префикс</label>
+                    {{ form.ipk_prefix(class="text-input") }}
+                </div>
+                <div>
+                    <label>ИПК ID</label>
+                    {{ form.ipk_id(class="text-input") }}
+                </div>
+            </div>
+            <label>Описание компетенции</label>
+            {{ form.description(class="text-area") }}
+            {{ form.submit(class="primary-btn") }}
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

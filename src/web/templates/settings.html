@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>Настройки</h1>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <label>Тема оформления</label>
+            {{ form.theme(class="text-input") }}
+            <label>Формат экспорта по умолчанию</label>
+            {{ form.default_format(class="text-input") }}
+            {{ form.submit(class="primary-btn") }}
+        </form>
+    </div>
+
+    <div class="upload-card">
+        <h2>Очистка данных</h2>
+        <p class="muted">Удаляет все загрузки, временные результаты обработки и файлы экспортов. Настройки (тема и формат) сохраняются.</p>
+        <form method="post" action="{{ url_for('main.settings_reset') }}">
+            {{ reset_form.hidden_tag() }}
+            <button type="submit" class="secondary-btn">Очистить данные</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+
+

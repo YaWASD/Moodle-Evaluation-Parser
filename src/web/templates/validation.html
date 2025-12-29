@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Валидация | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <div>
+                <h1>Проверка качества</h1>
+                <p>Автоматический анализ вопросов на ошибки и предупреждения.</p>
+            </div>
+        </div>
+        {% if issues %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Курс</th>
+                            <th>Вопрос</th>
+                            <th>Сообщение</th>
+                            <th>Тип</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for issue in issues %}
+                            <tr class="validation-{{ issue.severity }}">
+                                <td>{{ issue.course_name }}</td>
+                                <td>{{ issue.question_name }}</td>
+                                <td>{{ issue.message }}</td>
+                                <td>{{ issue.severity|capitalize }}</td>
+                                <td><a href="{{ url_for('main.question_edit', question_id=issue.question_id) }}">Исправить</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Ошибки и предупреждения не найдены.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

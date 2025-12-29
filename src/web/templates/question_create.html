@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Новый вопрос | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>Новый вопрос</h1>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <label>Курс</label>
+            {{ form.course_id(class="text-input") }}
+            <label>Название</label>
+            {{ form.name(class="text-input") }}
+            <label>Тип вопроса</label>
+            {{ form.type(class="text-input") }}
+            <label>Текст вопроса</label>
+            {{ form.question_text(class="text-area") }}
+            <label>Эталонный ответ</label>
+            {{ form.reference_answer(class="text-area") }}
+            <label>Варианты ответов</label>
+            {{ form.answers(class="text-area") }}
+            <label>Правильные ответы</label>
+            {{ form.correct_answers(class="text-area") }}
+            {{ form.submit(class="primary-btn") }}
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+
+
+

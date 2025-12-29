@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Экспорт | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>Экспорт документов</h1>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <label>Курсы</label>
+            <select name="courses" multiple class="text-area" size="5">
+                {% set selected_courses = form.courses.data or [] %}
+                {% for value, label in form.courses.choices %}
+                    <option value="{{ value }}" {% if value in selected_courses %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <label>Формат</label>
+            {{ form.format(class="text-input") }}
+            <label>Шаблон</label>
+            {{ form.template_name(class="text-input") }}
+            <div class="metadata-template-field">
+                <label>Шаблон метаданных</label>
+                <div class="metadata-template-controls">
+                    {{ form.metadata_template(class="text-input") }}
+                    <button class="secondary-btn" type="submit" name="apply_template" value="1">Применить</button>
+                    <a class="link" href="{{ url_for('main.metadata_templates') }}">Управление шаблонами</a>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div>
+                    <label>ПК префикс</label>
+                    {{ form.pk_prefix(class="text-input") }}
+                </div>
+                <div>
+                    <label>ПК ID</label>
+                    {{ form.pk_id(class="text-input") }}
+                </div>
+                <div>
+                    <label>ИПК префикс</label>
+                    {{ form.ipk_prefix(class="text-input") }}
+                </div>
+                <div>
+                    <label>ИПК ID</label>
+                    {{ form.ipk_id(class="text-input") }}
+                </div>
+            </div>
+            <label>Описание</label>
+            {{ form.description(class="text-area") }}
+            {{ form.submit(class="primary-btn") }}
+        </form>
+    </div>
+
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <h2>Последние экспорты</h2>
+            <a class="link" href="{{ url_for('main.exports_history') }}">История</a>
+        </div>
+        {% if exports %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Файл</th>
+                            <th>Курс</th>
+                            <th>Формат</th>
+                            <th>Дата</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in exports[:5] %}
+                            <tr>
+                                <td>{{ item.filename }}</td>
+                                <td>{{ item.course_name }}</td>
+                                <td>{{ item.format|upper }}</td>
+                                <td>{{ item.created_at[:19].replace('T',' ') }}</td>
+                                <td class="row-actions">
+                                    <a href="{{ url_for('main.export_download', export_id=item.id) }}">Скачать</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Экспортов пока не было.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика курса | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <div>
+                <h1>{{ course.name }}</h1>
+                <p>Вопросов: {{ stats.question_count }}</p>
+            </div>
+            <a class="link" href="{{ url_for('main.statistics') }}">Общая статистика</a>
+        </div>
+        <h3>Распределение по типам</h3>
+        {% if stats.type_distribution %}
+            <div class="badge-list">
+                {% for type, count in stats.type_distribution.items() %}
+                    <span class="badge">{{ type_labels.get(type, type) }} — {{ count }}</span>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Данные отсутствуют.</p>
+        {% endif %}
+    </div>
+
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <h2>Вопросы</h2>
+            <a class="link" href="{{ url_for('main.statistics_course_export', course_id=course.id) }}">Экспорт CSV</a>
+        </div>
+        {% if course.questions %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Тип</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question in course.questions %}
+                            <tr>
+                                <td>{{ question.name }}</td>
+                                <td>{{ type_labels.get(question.type, question.type) }}</td>
+                                <td><a href="{{ url_for('main.question_detail', question_id=question.id) }}">Подробнее</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Вопросов нет.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

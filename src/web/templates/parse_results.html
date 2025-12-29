@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты обработки | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>Результаты обработки</h1>
+        <p>Файл: <strong>{{ snapshot.original_name }}</strong></p>
+        <div class="stats-grid">
+            <article class="stat-card">
+                <h2>Курсы</h2>
+                <p class="stat-value">{{ snapshot.course_count }}</p>
+            </article>
+            <article class="stat-card">
+                <h2>Вопросы</h2>
+                <p class="stat-value">{{ snapshot.question_count }}</p>
+            </article>
+        </div>
+    </div>
+
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <h2>Курсы в файле</h2>
+            <a class="link" href="{{ url_for('main.upload') }}">Загрузить другой файл</a>
+        </div>
+        {% if snapshot.courses %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название курса</th>
+                            <th>Вопросов</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in snapshot.courses %}
+                            <tr>
+                                <td>{{ course.name }}</td>
+                                <td>{{ course.question_count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Курсы не найдены.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+

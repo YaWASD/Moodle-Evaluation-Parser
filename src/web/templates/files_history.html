@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}История загрузок | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <div>
+                <h1>История загрузок</h1>
+                <p>Список всех обработанных файлов за текущую сессию.</p>
+            </div>
+            <a class="link" href="{{ url_for('main.upload') }}">Новый файл</a>
+        </div>
+
+        {% if uploads %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Файл</th>
+                            <th>Курсов</th>
+                            <th>Вопросов</th>
+                            <th>Дата</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in uploads %}
+                            <tr>
+                                <td>{{ item.original_name }}</td>
+                                <td>{{ item.course_count }}</td>
+                                <td>{{ item.question_count }}</td>
+                                <td>{{ item.uploaded_at[:19].replace('T', ' ') }}</td>
+                                <td><a href="{{ url_for('main.parse_results', file_id=item.id) }}">Просмотр</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>В этой сессии файлы еще не загружались.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+

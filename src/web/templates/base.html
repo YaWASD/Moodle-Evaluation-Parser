@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Парсер оценочных материалов{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body class="theme-{{ session.get('theme', 'light') }}">
+    <header class="topbar">
+        <div class="logo">Парсер оценочных материалов</div>
+        <nav class="nav-links">
+            <a href="{{ url_for('main.index') }}">Главная</a>
+            <a href="{{ url_for('main.upload') }}">Загрузка</a>
+            <a href="{{ url_for('main.files_history') }}">История</a>
+            <a href="{{ url_for('main.activity') }}">Журнал</a>
+            <a href="{{ url_for('main.questions') }}">Вопросы</a>
+            <a href="{{ url_for('main.courses') }}">Курсы</a>
+            <a href="{{ url_for('main.categories') }}">Категории</a>
+            <a href="{{ url_for('main.export') }}">Экспорт</a>
+            <a href="{{ url_for('main.templates_list') }}">Шаблоны</a>
+            <a href="{{ url_for('main.metadata_templates') }}">Метаданные</a>
+            <a href="{{ url_for('main.validation') }}">Валидация</a>
+            <a href="{{ url_for('main.statistics') }}">Статистика</a>
+            <a href="{{ url_for('main.settings') }}">Настройки</a>
+        </nav>
+    </header>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <main class="page-container">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">
+        <small>© {{ 2025 }} Парсер оценочных материалов</small>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Шаблоны метаданных | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <div>
+                <h1>Шаблоны метаданных</h1>
+                <p>Используйте их на странице экспорта для быстрого заполнения ПК/ИПК.</p>
+            </div>
+            <a class="link" href="{{ url_for('main.metadata_template_create') }}">Создать шаблон</a>
+        </div>
+
+        {% if templates %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>ПК</th>
+                            <th>ИПК</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tpl in templates %}
+                            <tr>
+                                <td>{{ tpl.name }}</td>
+                                <td>{{ tpl.pk_prefix }} {{ tpl.pk_id }}</td>
+                                <td>{{ tpl.ipk_prefix }} {{ tpl.ipk_id }}</td>
+                                <td class="row-actions">
+                                    <a href="{{ url_for('main.metadata_template_edit', template_id=tpl.id) }}">Редактировать</a>
+                                    <form method="post" action="{{ url_for('main.metadata_template_delete', template_id=tpl.id) }}" style="display:inline">
+                                        {{ delete_form.hidden_tag() }}
+                                        <button class="link danger-link" type="submit">Удалить</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Шаблонов метаданных пока нет.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

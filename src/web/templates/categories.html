@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Категории | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>Категории (черновик)</h1>
+        <p>Здесь будет управление иерархией категорий. Пока отображаем путь до курса.</p>
+        {% if categories %}
+            <ul class="category-list">
+                {% for item in categories %}
+                    <li>
+                        <strong>{{ item.path }}</strong>
+                        <br />
+                        <small>{{ item.question_count }} вопросов</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Категории не найдены.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+

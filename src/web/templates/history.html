@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}История операций | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <h1>История операций</h1>
+        {% if history_items %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Время</th>
+                            <th>Действие</th>
+                            <th>Подробности</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history_items %}
+                            <tr>
+                                <td>{{ item.timestamp[:19].replace('T',' ') }}</td>
+                                <td>{{ item.action }}</td>
+                                <td>{{ item.details }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Журнал пока пуст.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

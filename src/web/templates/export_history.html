@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}История экспортов | Парсер{% endblock %}
+
+{% block content %}
+<section class="upload-page">
+    <div class="upload-card">
+        <div class="upload-card__header">
+            <div>
+                <h1>История экспортов</h1>
+                <p>Все сформированные документы за текущую сессию.</p>
+            </div>
+            <a class="link" href="{{ url_for('main.export') }}">Новый экспорт</a>
+        </div>
+
+        {% if exports %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Файл</th>
+                            <th>Курс</th>
+                            <th>Формат</th>
+                            <th>Дата</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in exports %}
+                            <tr>
+                                <td>{{ item.filename }}</td>
+                                <td>{{ item.course_name }}</td>
+                                <td>{{ item.format|upper }}</td>
+                                <td>{{ item.created_at[:19].replace('T',' ') }}</td>
+                                <td class="row-actions">
+                                    <a href="{{ url_for('main.export_download', export_id=item.id) }}">Скачать</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Экспортов пока не было.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+
