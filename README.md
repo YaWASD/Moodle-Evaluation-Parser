@@ -11,13 +11,30 @@ git clone https://github.com/YaWASD/Moodle-Evaluation-Parser.git
 cd Moodle-Evaluation-Parser
 ```
 
-2) Установка зависимостей:
+2) Создание и активация виртуального окружения (venv):
+
+Windows (PowerShell):
 
 ```bash
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+macOS / Linux:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+3) Установка зависимостей (внутри venv):
+
+```bash
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-3) Запуск:
+4) Запуск:
 
 ```bash
 python app.py
